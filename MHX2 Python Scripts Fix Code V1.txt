@@ -1,0 +1,118 @@
+#USER INPUTS
+Name = "INSERT HUMAN MODEL NAME HERE"
+Layer = 1 	#Layer Number the Model is On
+GizmoScrapLayer = 19 	#Layer Number You want Misc. Gizmos On
+
+#START PROGRAM
+#Turn On Certain Layers to Highlight Useful Bones
+bpy.ops.armature.armature_layers(layers = (True, True, True, True, True, True, True, False, False, False, True, False, False, False, False, False, False, False, True, True, True, True, True, False, False, False, False, False, False, False, False, False))
+
+#Move Bones to Different Layers
+bpy.data.objects[Name].data.bones["foot.fk.L"].layers[8] = True
+bpy.data.objects[Name].data.bones["foot.fk.L"].layers[5] = False
+bpy.data.objects[Name].data.bones["toe.fk.L"].layers[8] = True
+bpy.data.objects[Name].data.bones["toe.fk.L"].layers[5] = False
+bpy.data.objects[Name].data.bones["shin.ik.L"].layers[8] = True
+bpy.data.objects[Name].data.bones["shin.ik.L"].layers[4] = False
+
+bpy.data.objects[Name].data.bones["foot.fk.R"].layers[24] = True
+bpy.data.objects[Name].data.bones["foot.fk.R"].layers[21] = False
+bpy.data.objects[Name].data.bones["toe.fk.R"].layers[24] = True
+bpy.data.objects[Name].data.bones["toe.fk.R"].layers[21] = False
+bpy.data.objects[Name].data.bones["shin.ik.R"].layers[24] = True
+bpy.data.objects[Name].data.bones["shin.ik.R"].layers[20] = False
+
+bpy.data.objects[Name].data.bones["hand.fk.R"].layers[24] = True
+bpy.data.objects[Name].data.bones["hand.fk.R"].layers[19] = False
+bpy.data.objects[Name].data.bones["hand.fk.L"].layers[8] = True
+bpy.data.objects[Name].data.bones["hand.fk.L"].layers[3] = False
+
+#Creates Right Hand Copy Rotation Constraint for IK
+obj = bpy.data.objects
+objbone = bpy.data.objects[Name].pose.bones['hand.fk.R'].constraints
+objbone.new('COPY_ROTATION')
+objbone['Copy Rotation'].target = obj[Name]
+objbone['Copy Rotation'].subtarget = 'hand.ik.R'
+objbone['Copy Rotation'].target_space = 'POSE'
+objbone['Copy Rotation'].owner_space = 'POSE'
+
+#Creates Left Hand Copy Rotation Constraint for IK
+obj = bpy.data.objects
+objbone = bpy.data.objects[Name].pose.bones['hand.fk.L'].constraints
+objbone.new('COPY_ROTATION')
+objbone['Copy Rotation'].target = obj[Name]
+objbone['Copy Rotation'].subtarget = 'hand.ik.L'
+objbone['Copy Rotation'].target_space = 'POSE'
+objbone['Copy Rotation'].owner_space = 'POSE'
+
+#Creates Right Elbow and Hand IK
+obj = bpy.data.objects
+objbone = bpy.data.objects[Name].pose.bones['forearm.fk.R'].constraints
+objbone.new('IK') 
+objbone['IK'].target = obj[Name]
+objbone['IK'].subtarget = 'hand.ik.R'
+objbone['IK'].pole_target = obj[Name]
+objbone['IK'].pole_subtarget = 'elbow.pt.ik.R'
+objbone['IK'].chain_count = 2
+objbone['IK'].pole_angle = -1.5708
+
+#Creates Left Elbow and Hand IK
+obj = bpy.data.objects
+objbone = bpy.data.objects[Name].pose.bones['forearm.fk.L'].constraints
+objbone.new('IK') 
+objbone['IK'].target = obj[Name]
+objbone['IK'].subtarget = 'hand.ik.L'
+objbone['IK'].pole_target = obj[Name]
+objbone['IK'].pole_subtarget = 'elbow.pt.ik.L'
+objbone['IK'].chain_count = 2
+objbone['IK'].pole_angle = -1.5708
+
+#Creates Left Foot and Knee Target IK
+obj = bpy.data.objects
+objbone = bpy.data.objects[Name].pose.bones['shin.fk.L'].constraints
+objbone.new('IK') 
+objbone['IK'].target = obj[Name]
+objbone['IK'].subtarget = 'ankle.ik.L'
+objbone['IK'].pole_target = obj[Name]
+objbone['IK'].pole_subtarget = 'knee.pt.ik.L'
+objbone['IK'].chain_count = 2
+objbone['IK'].pole_angle = -1.5708
+
+#Creates Right Foot and Knee Target IK
+obj = bpy.data.objects
+objbone = bpy.data.objects[Name].pose.bones['shin.fk.R'].constraints
+objbone.new('IK') 
+objbone['IK'].target = obj[Name]
+objbone['IK'].subtarget = 'ankle.ik.R'
+objbone['IK'].pole_target = obj[Name]
+objbone['IK'].pole_subtarget = 'knee.pt.ik.R'
+objbone['IK'].chain_count = 2
+objbone['IK'].pole_angle = -1.5708
+
+#Fixes Feet Bone IKs
+#Left
+bpy.data.objects[Name].pose.bones["toe.L"].constraints["LegIK"].driver_remove('influence')
+objbone = bpy.data.objects[Name].pose.bones['toe.L'].constraints
+objbone['LegIK'].influence = 1
+bpy.data.objects[Name].pose.bones["foot.L"].constraints["LegIK"].driver_remove('influence')
+objbone = bpy.data.objects[Name].pose.bones['foot.L'].constraints
+objbone['LegIK'].influence = 1
+#Right
+bpy.data.objects[Name].pose.bones["toe.R"].constraints["LegIK"].driver_remove('influence')
+objbone = bpy.data.objects[Name].pose.bones['toe.R'].constraints
+objbone['LegIK'].influence = 1
+bpy.data.objects[Name].pose.bones["foot.R"].constraints["LegIK"].driver_remove('influence')
+objbone = bpy.data.objects[Name].pose.bones['foot.R'].constraints
+objbone['LegIK'].influence = 1
+
+#Moves Misc. Gizmos to GizmoScrapLayer 
+for obj in bpy.data.objects[Name + ":Gizmos"].children:
+    obj.layers[GizmoScrapLayer] = True
+    obj.layers[Layer] = False
+
+
+#Must include empty lines above to end the for loop
+bpy.data.objects[Name + ":Gizmos"].layers[GizmoScrapLayer] = True
+bpy.data.objects[Name + ":Gizmos"].layers[Layer] = False
+
+#End Program
